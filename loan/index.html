@@ -5,23 +5,72 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quik Loan Lending - Prequalification</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f8f9fa; margin:0; padding:0; }
-    .container { max-width:600px; margin:50px auto; background:#fff; padding:30px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
-    h1 { text-align:center; color:#2c3e50; }
-    p { text-align:center; color:#555; }
+    body { 
+      font-family: Arial, sans-serif; 
+      margin:0; 
+      padding:0; 
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .container { 
+      max-width:650px; 
+      background:#fff; 
+      padding:35px; 
+      border-radius:12px; 
+      box-shadow:0 8px 20px rgba(0,0,0,0.15); 
+      position:relative;
+      overflow:hidden;
+    }
+    h1 { text-align:center; color:#2c3e50; margin-bottom:10px; }
+    p { text-align:center; color:#555; line-height:1.6; }
+    .trust-badges { 
+      display:flex; 
+      justify-content:space-around; 
+      margin:20px 0; 
+    }
+    .trust-badges div { 
+      text-align:center; 
+      font-size:14px; 
+      color:#2c3e50; 
+    }
+    .trust-badges span { 
+      font-size:30px; 
+      display:block; 
+      margin-bottom:5px; 
+    }
     form { margin-top:20px; }
     label { display:block; margin:12px 0 6px; font-weight:bold; }
     input, select { width:100%; padding:10px; border:1px solid #ccc; border-radius:5px; }
-    button { margin-top:20px; width:100%; padding:15px; background:#27ae60; color:#fff; font-size:16px; font-weight:bold; border:none; border-radius:5px; cursor:pointer; }
+    button { margin-top:20px; width:100%; padding:15px; background:#27ae60; color:#fff; font-size:16px; font-weight:bold; border:none; border-radius:5px; cursor:pointer; transition:0.3s; }
     button:hover { background:#219150; }
     .error { color:#c0392b; margin-top:10px; font-weight:bold; text-align:center; }
     .success { color:#27ae60; margin-top:10px; font-weight:bold; text-align:center; }
+    .decor-circle {
+      position:absolute;
+      border-radius:50%;
+      opacity:0.1;
+    }
+    .circle1 { width:200px; height:200px; background:#27ae60; top:-50px; right:-50px; }
+    .circle2 { width:150px; height:150px; background:#2980b9; bottom:-40px; left:-40px; }
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
   <div class="container">
+    <div class="decor-circle circle1"></div>
+    <div class="decor-circle circle2"></div>
+
     <h1>Check Loan Eligibility</h1>
-    <p>Answer a few quick questions to see if you qualify.</p>
+    <p>In order to confirm whether you may qualify for a loan, we kindly ask you to provide some basic details below. This information will only be used to assess eligibility and to securely connect you with trusted lending partners. We value your privacy and take every step to ensure your data is handled safely.</p>
+
+    <div class="trust-badges">
+      <div><span><i class="fas fa-lock"></i></span>Secure & Private</div>
+      <div><span><i class="fas fa-user-check"></i></span>Trusted Lenders</div>
+      <div><span><i class="fas fa-shield-alt"></i></span>Data Protection</div>
+    </div>
 
     <form id="eligibilityForm">
       <label for="age">Age</label>
@@ -33,17 +82,14 @@
       <label for="income">Monthly Income ($)</label>
       <input type="number" id="income" name="income" required>
 
-      <label for="employer">Employer</label>
-      <input type="text" id="employer" name="employer" required>
+      <label for="profession">What is your profession?</label>
+      <input type="text" id="profession" name="profession" required>
 
       <label for="address">Address</label>
       <input type="text" id="address" name="address" required>
 
-      <label for="homePhone">Home Phone</label>
+      <label for="homePhone">Phone Number</label>
       <input type="text" id="homePhone" name="homePhone" required>
-
-      <label for="workPhone">Work Phone</label>
-      <input type="text" id="workPhone" name="workPhone" required>
 
       <label for="account">Do you have a checking account?</label>
       <select id="account" name="account" required>
@@ -65,10 +111,9 @@
       const age = parseInt(document.getElementById('age').value);
       const state = document.getElementById('state').value.trim().toLowerCase();
       const income = parseInt(document.getElementById('income').value);
-      const employer = document.getElementById('employer').value.trim().toLowerCase();
+      const profession = document.getElementById('profession').value.trim().toLowerCase();
       const address = document.getElementById('address').value.trim().toLowerCase();
-      const homePhone = document.getElementById('homePhone').value.trim();
-      const workPhone = document.getElementById('workPhone').value.trim();
+      const phone = document.getElementById('homePhone').value.trim();
       const account = document.getElementById('account').value;
 
       let error = "";
@@ -77,10 +122,9 @@
       else if (state === "new york" || state === "ny") error = "Sorry, not eligible from New York.";
       else if (income < 1200 || income > 10000) error = "Income must be between $1,200 and $10,000.";
       else if (account !== "yes") error = "A checking account is required.";
-      else if (homePhone === workPhone) error = "Home and work phone cannot be the same.";
       else if (address.includes("po box")) error = "PO Box addresses are not allowed.";
-      else if (["military","attorney general","air reserve","air force","army","reserve","usmc","rotc","student","temp","unemployed","unemployment"].some(term => employer.includes(term))) {
-        error = "Employer type not eligible.";
+      else if (["military","attorney general","air reserve","air force","army","reserve","usmc","rotc","student","temp","unemployed","unemployment"].some(term => profession.includes(term))) {
+        error = "Profession not eligible.";
       }
 
       const messageDiv = document.getElementById('message');
