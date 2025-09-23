@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quick Loan - Qualification Quiz</title>
+  <style>
+    :root{--accent:#1769ff;--bg:#f7f9fc}
+    body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);margin:0;padding:20px;display:flex;align-items:center;justify-content:center;min-height:100vh}
+    .card{width:100%;max-width:760px;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(12,20,40,.08);padding:28px}
+    h1{margin:0 0 12px;font-size:20px}
+    p.lead{margin:0 0 20px;color:#445}
+    .question{margin-bottom:16px}
+    label{display:block;margin-bottom:6px;font-weight:600}
+    .options button{margin-right:8px;margin-bottom:8px}
+    input[type=text],select,input[type=number],input[type=date]{width:100%;padding:10px;border:1px solid #e3e7ee;border-radius:8px}
+    .row{display:flex;gap:12px}
+    .row>div{flex:1}
+    .actions{display:flex;gap:12px;margin-top:18px}
+    .btn{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
+    .btn.secondary{background:#eef3ff;color:var(--accent)}
+    .result{padding:14px;border-radius:8px;margin-top:14px}
+    .pass{background:#ecffef;border:1px solid #b7f0c4;color:#0a7b2f}
+    .fail{background:#fff3f3;border:1px solid #f1c2c2;color:#a12b2b}
+    small.note{display:block;margin-top:8px;color:#666}
+    footer{margin-top:18px;text-align:center;color:#666;font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="card" role="main">
+    <h1>Quick Check — See if you qualify</h1>
+    <p class="lead">Answer a few quick questions. If qualified, get redirected to the offer instantly.</p>
+
+    <form id="quiz">
+      <div class="question">
+        <label for="state">State (we do not accept NY)</label>
+        <input type="text" id="state" name="state" placeholder="e.g. California" required />
+      </div>
+
+      <div class="question row">
+        <div>
+          <label for="age">Age</label>
+          <input type="number" id="age" name="age" min="18" max="100" required />
+        </div>
+        <div>
+          <label for="income">Monthly income (USD)</label>
+          <input type="number" id="income" name="income" min="0" step="1" required />
+        </div>
+      </div>
+
+      <div class="question">
+        <label for="checking">Do you have a checking account?</label>
+        <select id="checking" required>
+          <option value="">Select</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <div class="question">
+        <label for="employment">Employment status</label>
+        <select id="employment" required>
+          <option value="">Select</option>
+          <option value="employed">Employed (private)</option>
+          <option value="government">Government / Public sector</option>
+          <option value="military">Military</option>
+          <option value="self">Self-employed</option>
+          <option value="student">Student</option>
+          <option value="temp">Temporary</option>
+          <option value="unemployed">Unemployed</option>
+        </select>
+      </div>
+
+      <div class="question">
+        <label for="employer">Employer name (type if applies) — helps verify eligibility</label>
+        <input type="text" id="employer" name="employer" placeholder="Company name" />
+        <small class="note">If your employer contains words like military, army, air force, reserve, usmc, attorney general, rotc, or similar — it will mark as ineligible.</small>
+      </div>
+
+      <div class="question">
+        <label for="address">Address (no PO BOX allowed)</label>
+        <input type="text" id="address" name="address" placeholder="Street address" />
+      </div>
+
+      <div class="question">
+        <label for="nextpay">Next pay date</label>
+        <input type="date" id="nextpay" name="nextpay" required />
+        <small class="note">Next pay date cannot be weekend or a bank holiday (New Year's Eve, Christmas, July 4, MLK Day, Labor Day).</small>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn">Check qualification</button>
+        <button type="button" id="clear" class="btn secondary">Clear</button>
+      </div>
+
+      <div id="feedback" aria-live="polite"></div>
+    </form>
+
+    <footer>Designed as a pre-qualifier — does not submit sensitive data. Replace OFFER_URL in the code with your affiliate link.</footer>
+  </div>
+
+<script>
+// ---------- CONFIG ----------
+const OFFER_URL = 'https://go.smartestdeals.xyz/68cf1598f37e1dee2e2c8a22?sub1={{ad.id}}&sub2={{adset.id}}&sub3={{campaign.id}}&sub4={{ad.name}}&sub5={{adset.name}}&sub6={{campaign.name}}&sub7={{placement}}&sub8={{site_source_name}}&utm_source=facebook&utm_medium=paidE'; // <-- replace with your MaxBounty/offer link
+// ----------------------------
+
+const form = document.getElementById('quiz');
+const feedback = document.getElementById('feedback');
+const clearBtn = document.getElementById('clear');
+
+function isWeekend(date){
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const day = d.getDay();
+  return (day === 0 || day === 6);
+}
+
+// compute nth weekday of month helper
+function nthWeekdayOfMonth(year, month, weekday, n){
+  // month is 0-based, weekday: 0 Sun .. 6 Sat
+  let count = 0;
+  for(let d=1; d<=31; d++){
+    const dt = new Date(year, month, d);
+    if(dt.getMonth() !== month) break;
+    if(dt.getDay() === weekday){
+      count++;
+      if(count === n) return dt;
+    }
+  }
+  return null;
+}
+
+function getMLKDate(year){
+  // MLK Day = third Monday in January
+  return nthWeekdayOfMonth(year, 0, 1, 3); // Jan = 0, Monday=1
+}
+function getLaborDay(year){
+  // Labor Day = first Monday in September
+  return nthWeekdayOfMonth(year, 8, 1, 1); // Sep=8
+}
+
+function isBankHoliday(date){
+  const y = date.getFullYear();
+  const m = date.getMonth();
+  const d = date.getDate();
+
+  // Fixed-date holidays
+  const fixed = [
+    {m:11,d:25}, // Christmas Dec 25
+    {m:11,d:31}, // New Year's Eve Dec 31
+    {m:6,d:4} // July 4
+  ];
+  for(const h of fixed) if(h.m===m && h.d===d) return true;
+
+  // MLK
+  const mlk = getMLKDate(y);
+  if(mlk && mlk.getFullYear()===y && mlk.getMonth()===date.getMonth() && mlk.getDate()===date.getDate()) return true;
+
+  // Labor Day
+  const labor = getLaborDay(y);
+  if(labor && labor.getFullYear()===y && labor.getMonth()===date.getMonth() && labor.getDate()===date.getDate()) return true;
+
+  return false;
+}
+
+function normalizeText(s){return (s||'').toString().trim().toLowerCase();}
+
+form.addEventListener('submit', function(ev){
+  ev.preventDefault();
+  feedback.innerHTML = '';
+
+  const state = normalizeText(document.getElementById('state').value);
+  const age = parseInt(document.getElementById('age').value,10);
+  const income = parseInt(document.getElementById('income').value,10);
+  const checking = document.getElementById('checking').value;
+  const employment = document.getElementById('employment').value;
+  const employer = normalizeText(document.getElementById('employer').value);
+  const address = normalizeText(document.getElementById('address').value);
+  const nextpayRaw = document.getElementById('nextpay').value;
+
+  const errors = [];
+
+  // State check
+  if(state.includes('new york') || state === 'ny' || state.includes('ny ')){
+    errors.push('New York residents are not eligible.');
+  }
+
+  // Age
+  if(isNaN(age) || age < 20 || age > 65){
+    errors.push('Age must be between 20 and 65.');
+  }
+
+  // Income
+  if(isNaN(income) || income < 1200 || income > 10000){
+    errors.push('Monthly income must be between $1,200 and $10,000.');
+  }
+
+  // Checking
+  if(checking !== 'yes') errors.push('A checking account is required.');
+
+  // Employment restrictions
+  const ineligibleEmployment = ['military','army','air force','air reserve','reserve','usmc','rotc','student','temporary','temp','unemployment','unemployed','attorney general'];
+  if(employment === 'military' || employment === 'government' || employment === 'student' || employment === 'temp' || employment === 'unemployed'){
+    errors.push('Employment type selected is not eligible.');
+  }
+  // employer name check
+  for(const w of ineligibleEmployment){
+    if(employer.includes(w)){
+      errors.push('Employer appears to be in an ineligible category.');
+      break;
+    }
+  }
+
+  // Address PO BOX check
+  if(address.includes('po box') || address.includes('p.o. box') || address.includes('po-box')){
+    errors.push('PO BOX addresses are not allowed.');
+  }
+
+  // Next pay date checks
+  if(!nextpayRaw){
+    errors.push('Next pay date is required.');
+  } else {
+    const nd = new Date(nextpayRaw + 'T00:00:00');
+    if(isWeekend(nd)) errors.push('Next pay date cannot be on a Saturday or Sunday.');
+    if(isBankHoliday(nd)) errors.push('Next pay date falls on a bank holiday.');
+  }
+
+  if(errors.length){
+    feedback.innerHTML = `<div class="result fail"><strong>Not qualified:</strong><ul>${errors.map(e=>`<li>${e}</li>`).join('')}</ul></div>`;
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+
+  // Passed: show success and redirect to OFFER with query params (use subids for tracking)
+  feedback.innerHTML = `<div class="result pass"><strong>Qualified!</strong> Redirecting to check offers...</div>`;
+
+  // Build query string with safe params (avoid sensitive info)
+  const params = new URLSearchParams({
+    state: state,
+    age: age,
+    income: income,
+    checking: checking,
+    employer: employer ? employer : 'n/a'
+  });
+
+  // Delay a little for UX and allow tracking
+  setTimeout(()=>{
+    const url = OFFER_URL + (OFFER_URL.includes('?') ? '&' : '?') + params.toString();
+    // Redirect
+    window.location.href = url;
+  }, 900);
+
+});
+
+clearBtn.addEventListener('click', ()=>{
+  form.reset();
+  feedback.innerHTML = '';
+});
+</script>
+</body>
+</html>
