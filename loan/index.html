@@ -1,0 +1,39 @@
+<!-- /loan/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loan Details</title>
+</head>
+<body>
+  <h1>Loan Information</h1>
+
+  <div id="loan-details">
+    <p>Loading loan details...</p>
+  </div>
+
+  <script>
+    // Function to get URL parameters
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    // Read URL parameters
+    const amount = getQueryParam('amount');
+    const rate = getQueryParam('rate');
+
+    const detailsDiv = document.getElementById('loan-details');
+
+    if (amount && rate) {
+      detailsDiv.innerHTML = `
+        <p><strong>Loan Amount:</strong> $${parseFloat(amount).toLocaleString()}</p>
+        <p><strong>Interest Rate:</strong> ${rate}%</p>
+      `;
+    } else {
+      detailsDiv.innerHTML = `<p style="color:red;">Missing loan details in the URL.</p>`;
+    }
+  </script>
+</body>
+</html>
