@@ -1,0 +1,36 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Best Kitchen Appliances - Smart Cooking Starts Here</title>
+  <meta name="description" content="Discover the latest kitchen trends, gadgets, and healthy recipes. Your source for smart cooking inspiration at best-kitchen-apliances.com.">
+</head>
+<body>
+  <header>
+    <h1>Best Kitchen Appliances</h1>
+    <nav>
+      <a href="index.html">Home</a> |
+      <a href="about.html">About</a> |
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Welcome to Best Kitchen Appliances</h2>
+    <p>Your go-to place for trending recipes, smart gadgets, and kitchen organization ideas. Explore articles below:</p>
+    <ul>
+      <li><a href="air-fryer-recipes.html">Air Fryer Recipes Everyone’s Trying</a></li>
+      <li><a href="smart-kitchen-gadgets.html">Smart Kitchen Gadgets That Make Cooking Easier</a></li>
+      <li><a href="kitchen-organization.html">Kitchen Organization & Minimalist Design</a></li>
+      <li><a href="healthy-cooking-trends.html">Healthy Cooking Trends for 2025</a></li>
+      <li><a href="essential-kitchen-tools.html">Essential Tools Every Home Cook Needs</a></li>
+    </ul>
+  </main>
+
+  <footer>
+    <p>© 2025 Best Kitchen Appliances | <a href="https://best-kitchen-apliances.com">best-kitchen-apliances.com</a></p>
+  </footer>
+</body>
+</html>
